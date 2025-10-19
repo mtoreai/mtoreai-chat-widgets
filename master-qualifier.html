@@ -21,28 +21,58 @@
         }
         .chat-container {
             width: 100%;
-            max-width: 450px;
+            max-width: 500px;
+            height: 700px;
             background: white;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
             overflow: hidden;
         }
         .chat-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 25px;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
-        .chat-header h2 {
+        .avatar {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .header-info h2 {
             font-size: 20px;
             margin-bottom: 5px;
         }
-        .chat-header p {
+        .header-info p {
             font-size: 13px;
             opacity: 0.9;
         }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #4ade80;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
         .chat-messages {
-            height: 500px;
+            flex: 1;
             padding: 25px;
             overflow-y: auto;
             background: #f8fafc;
@@ -54,11 +84,40 @@
             animation: slideIn 0.3s ease-out;
         }
         @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        .message.bot { justify-content: flex-start; }
-        .message.user { justify-content: flex-end; }
+        .message.bot {
+            justify-content: flex-start;
+        }
+        .message.user {
+            justify-content: flex-end;
+        }
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        .message.bot .message-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .message.user .message-avatar {
+            background: #e2e8f0;
+            color: #475569;
+        }
         .message-content {
             max-width: 70%;
             padding: 15px 18px;
@@ -74,6 +133,40 @@
         .message.user .message-content {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
+        }
+        .typing-indicator {
+            display: none;
+            padding: 15px 18px;
+            background: white;
+            border-radius: 18px;
+            width: fit-content;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .typing-indicator.active {
+            display: block;
+        }
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #94a3b8;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+            animation: typing 1.4s infinite;
+        }
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
         }
         .chat-input-container {
             padding: 20px;
@@ -94,7 +187,9 @@
             outline: none;
             transition: border-color 0.3s;
         }
-        #messageInput:focus { border-color: #667eea; }
+        #messageInput:focus {
+            border-color: #667eea;
+        }
         #sendButton {
             width: 50px;
             height: 50px;
@@ -109,120 +204,196 @@
             justify-content: center;
             transition: transform 0.2s;
         }
-        #sendButton:hover { transform: scale(1.05); }
-        #sendButton:active { transform: scale(0.95); }
-        .typing-indicator {
-            display: none;
-            gap: 5px;
-            padding: 15px 18px;
-            background: white;
-            border-radius: 18px;
-            width: fit-content;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        #sendButton:hover {
+            transform: scale(1.05);
         }
-        .typing-indicator.active { display: flex; }
-        .typing-dot {
-            width: 8px;
-            height: 8px;
+        #sendButton:active {
+            transform: scale(0.95);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
-            border-radius: 50%;
-            animation: typing 1.4s infinite;
-        }
-        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes typing {
-            0%, 60%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-10px); }
         }
     </style>
 </head>
 <body>
     <div class="chat-container">
         <div class="chat-header">
-            <h2>MTOREAI Qualifier</h2>
-            <p>Get matched in 60 seconds</p>
-        </div>
-        <div class="chat-messages" id="chatMessages">
-            <div class="message bot">
-                <div class="message-content">Hi! I'll help you find the right funding and business solutions in 60 seconds. What's your first name?</div>
+            <div class="avatar">M</div>
+            <div class="header-info">
+                <h2>MTOREAI Assistant</h2>
+                <p><span class="status-dot"></span>Online - Ready to help</p>
             </div>
         </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="message bot">
+                <div class="message-avatar">M</div>
+                <div class="message-content">
+                    Hi! I'm your Master Qualifier. I'll help you find the right funding and business solutions. What's your first name?
+                </div>
+            </div>
+        </div>
+
         <div class="chat-input-container">
             <div class="chat-input-wrapper">
-                <input type="text" id="messageInput" placeholder="Type your answer..." autocomplete="off">
-                <button id="sendButton">&#10148;</button>
+                <input 
+                    type="text" 
+                    id="messageInput" 
+                    placeholder="Type your message..."
+                    autocomplete="off"
+                >
+                <button id="sendButton">➤</button>
             </div>
         </div>
     </div>
+
     <script>
         const WEBHOOK = 'https://mtoreai.app.n8n.cloud/webhook/qualifier-intake';
-        const messages = document.getElementById('chatMessages');
-        const input = document.getElementById('messageInput');
-        const btn = document.getElementById('sendButton');
-        let data = {};
-        let index = 0;
-        const qs = [
-            {k:'firstName',q:"What's your first name?"},
-            {k:'lastName',q:"Last name?"},
-            {k:'email',q:"Email address?"},
-            {k:'phone',q:"Phone number?"},
-            {k:'businessName',q:"Business name?"},
-            {k:'businessState',q:"State? (2-letter code)"},
-            {k:'industry',q:"Industry?"},
-            {k:'primaryChallenge',q:"Primary challenge?"},
-            {k:'businessStage',q:"Business stage? (Startup/Growing/Established)"},
-            {k:'priority',q:"Priority? (Funding / Systems/Marketing)"},
-            {k:'timeInBusiness',q:"Time in business?"},
-            {k:'monthlyRevenue',q:"Monthly revenue range?"},
-            {k:'businessCredit',q:"Business credit?"},
-            {k:'personalCredit',q:"Personal credit range?"},
-            {k:'fundingPurpose',q:"Funding purpose?"}
+        
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+
+        let qualifierData = {};
+        let currentQuestionIndex = 0;
+
+        const questions = [
+            { key: 'firstName', question: "What's your first name?" },
+            { key: 'lastName', question: "And your last name?" },
+            { key: 'email', question: "What's your email address?" },
+            { key: 'phone', question: "Phone number?" },
+            { key: 'businessName', question: "What's your business name?" },
+            { key: 'businessState', question: "Which state is your business in? (2-letter code, e.g., TX, CA)" },
+            { key: 'industry', question: "What industry are you in?" },
+            { key: 'primaryChallenge', question: "What's your primary business challenge right now?" },
+            { key: 'businessStage', question: "What stage is your business in? (Startup, Growing, Established)" },
+            { key: 'priority', question: "What's your priority? (Get funding / Build systems/marketing)" },
+            { key: 'timeInBusiness', question: "How long have you been in business? (Less than 6 months / 6 months - 1 year / 1-2 years / 2+ years)" },
+            { key: 'monthlyRevenue', question: "What's your average monthly revenue? (Under $10k / $10k-$25k / $25k-$50k / $50k-$100k / $100k+)" },
+            { key: 'businessCredit', question: "How's your business credit? (None/Building / Fair / Good / Excellent)" },
+            { key: 'personalCredit', question: "And your personal credit score range? (Below 600 / 600-649 / 650-679 / 680-719 / 720+)" },
+            { key: 'fundingPurpose', question: "What would you use funding for?" }
         ];
-        function add(txt,user){
-            const d=document.createElement('div');
-            d.className='message '+(user?'user':'bot');
-            d.innerHTML='<div class="message-content">'+txt+'</div>';
-            messages.appendChild(d);
-            messages.scrollTop=messages.scrollHeight;
+
+        function addMessage(text, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = isUser ? 'U' : 'M';
+            
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            content.textContent = text;
+            
+            if (isUser) {
+                messageDiv.appendChild(content);
+                messageDiv.appendChild(avatar);
+            } else {
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(content);
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
-        function showTyping(){
-            const t=document.createElement('div');
-            t.id='typing';
-            t.className='typing-indicator active';
-            t.innerHTML='<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
-            messages.appendChild(t);
-            messages.scrollTop=messages.scrollHeight;
+
+        function showTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot';
+            typingDiv.id = 'typingIndicator';
+            
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = 'M';
+            
+            const typingContent = document.createElement('div');
+            typingContent.className = 'typing-indicator active';
+            typingContent.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+            
+            typingDiv.appendChild(avatar);
+            typingDiv.appendChild(typingContent);
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
         }
-        function hideTyping(){
-            const t=document.getElementById('typing');
-            if(t)t.remove();
-        }
-        async function send(){
-            try{
-                await fetch(WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-                add("✅ Perfect! Check your email - I'll send your personalized match!");
-            }catch(e){
-                add("Thanks! Our team will reach out soon.");
+
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
             }
         }
-        function handle(){
-            const ans=input.value.trim();
-            if(!ans)return;
-            add(ans,true);
-            data[qs[index].k]=ans;
-            input.value='';
-            index++;
-            if(index<qs.length){
-                showTyping();
-                setTimeout(()=>{hideTyping();add(qs[index].q);},500);
-            }else{
-                showTyping();
-                setTimeout(()=>{hideTyping();send();},500);
+
+        async function sendData() {
+            try {
+                const response = await fetch(WEBHOOK, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(qualifierData)
+                });
+
+                if (response.ok) {
+                    addMessage("✅ Perfect! I've got everything I need. Check your email in the next few minutes - I'll send you your personalized funding match and business hub access!");
+                } else {
+                    addMessage("I've recorded your information! Our team will reach out shortly with your personalized recommendations.");
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage("Thanks for completing the qualifier! Our team will be in touch soon.");
             }
         }
-        btn.onclick=handle;
-        input.onkeypress=e=>{if(e.key==='Enter')handle();};
-        setTimeout(()=>input.focus(),300);
+
+        function handleAnswer() {
+            const answer = messageInput.value.trim();
+            if (!answer) return;
+
+            addMessage(answer, true);
+            
+            const currentQuestion = questions[currentQuestionIndex];
+            qualifierData[currentQuestion.key] = answer;
+            
+            messageInput.value = '';
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < questions.length) {
+                showTypingIndicator();
+                setTimeout(() => {
+                    hideTypingIndicator();
+                    addMessage(questions[currentQuestionIndex].question);
+                }, 800);
+            } else {
+                showTypingIndicator();
+                setTimeout(() => {
+                    hideTypingIndicator();
+                    sendData();
+                }, 1000);
+            }
+        }
+
+        sendButton.addEventListener('click', handleAnswer);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleAnswer();
+            }
+        });
+
+        setTimeout(() => {
+            messageInput.focus();
+        }, 500);
     </script>
 </body>
 </html>
+
