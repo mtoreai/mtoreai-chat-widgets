@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MTOREAI Master Qualifier</title>
     <style>
         * {
@@ -8,7 +10,6 @@
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -18,7 +19,6 @@
             justify-content: center;
             padding: 20px;
         }
-
         .chat-container {
             width: 100%;
             max-width: 450px;
@@ -27,57 +27,38 @@
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: hidden;
         }
-
         .chat-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 25px;
             text-align: center;
         }
-
         .chat-header h2 {
             font-size: 20px;
             margin-bottom: 5px;
         }
-
         .chat-header p {
             font-size: 13px;
             opacity: 0.9;
         }
-
         .chat-messages {
             height: 500px;
             padding: 25px;
             overflow-y: auto;
             background: #f8fafc;
         }
-
         .message {
             margin-bottom: 20px;
             display: flex;
             gap: 10px;
             animation: slideIn 0.3s ease-out;
         }
-
         @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
-        .message.bot {
-            justify-content: flex-start;
-        }
-
-        .message.user {
-            justify-content: flex-end;
-        }
-
+        .message.bot { justify-content: flex-start; }
+        .message.user { justify-content: flex-end; }
         .message-content {
             max-width: 70%;
             padding: 15px 18px;
@@ -85,30 +66,25 @@
             line-height: 1.5;
             font-size: 15px;
         }
-
         .message.bot .message-content {
             background: white;
             color: #1e293b;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
-
         .message.user .message-content {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
-
         .chat-input-container {
             padding: 20px;
             background: white;
             border-top: 1px solid #e2e8f0;
         }
-
         .chat-input-wrapper {
             display: flex;
             gap: 10px;
             align-items: center;
         }
-
         #messageInput {
             flex: 1;
             padding: 15px 20px;
@@ -118,11 +94,7 @@
             outline: none;
             transition: border-color 0.3s;
         }
-
-        #messageInput:focus {
-            border-color: #667eea;
-        }
-
+        #messageInput:focus { border-color: #667eea; }
         #sendButton {
             width: 50px;
             height: 50px;
@@ -137,21 +109,10 @@
             justify-content: center;
             transition: transform 0.2s;
         }
-
-        #sendButton:hover {
-            transform: scale(1.05);
-        }
-
-        #sendButton:active {
-            transform: scale(0.95);
-        }
-
+        #sendButton:hover { transform: scale(1.05); }
+        #sendButton:active { transform: scale(0.95); }
         .typing-indicator {
             display: none;
-        }
-
-        .typing-indicator.active {
-            display: flex;
             gap: 5px;
             padding: 15px 18px;
             background: white;
@@ -159,7 +120,7 @@
             width: fit-content;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
-
+        .typing-indicator.active { display: flex; }
         .typing-dot {
             width: 8px;
             height: 8px;
@@ -167,22 +128,11 @@
             border-radius: 50%;
             animation: typing 1.4s infinite;
         }
-
-        .typing-dot:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .typing-dot:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
         @keyframes typing {
-            0%, 60%, 100% {
-                transform: translateY(0);
-            }
-            30% {
-                transform: translateY(-10px);
-            }
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
         }
     </style>
 </head>
@@ -192,48 +142,87 @@
             <h2>MTOREAI Qualifier</h2>
             <p>Get matched in 60 seconds</p>
         </div>
-
         <div class="chat-messages" id="chatMessages">
             <div class="message bot">
-                <div class="message-content">
-                    Hi! I'll help you find the right funding and business solutions in 60 seconds. What's your first name?
-                </div>
+                <div class="message-content">Hi! I'll help you find the right funding and business solutions in 60 seconds. What's your first name?</div>
             </div>
         </div>
-
         <div class="chat-input-container">
             <div class="chat-input-wrapper">
-                <input 
-                    type="text" 
-                    id="messageInput" 
-                    placeholder="Type your answer..."
-                    autocomplete="off"
-                >
-                <button id="sendButton">➤</button>
+                <input type="text" id="messageInput" placeholder="Type your answer..." autocomplete="off">
+                <button id="sendButton">&#10148;</button>
             </div>
         </div>
     </div>
-
     <script>
-        const N8N_WEBHOOK_URL = 'https://mtoreai.app.n8n.cloud/webhook/qualifier-intake';
-        
-        const chatMessages = document.getElementById('chatMessages');
-        const messageInput = document.getElementById('messageInput');
-        const sendButton = document.getElementById('sendButton');
-
-        let qualifierData = {};
-        let currentQuestionIndex = 0;
-
-        const questions = [
-            { key: 'firstName', question: "What's your first name?" },
-            { key: 'lastName', question: "And your last name?" },
-            { key: 'email', question: "What's your email address?" },
-            { key: 'phone', question: "Phone number?" },
-            { key: 'businessName', question: "What's your business name?" },
-            { key: 'businessState', question: "Which state is your business in? (2-letter code, e.g., TX, CA)" },
-            { key: 'industry', question: "What indu
+        const WEBHOOK = 'https://mtoreai.app.n8n.cloud/webhook/qualifier-intake';
+        const messages = document.getElementById('chatMessages');
+        const input = document.getElementById('messageInput');
+        const btn = document.getElementById('sendButton');
+        let data = {};
+        let index = 0;
+        const qs = [
+            {k:'firstName',q:"What's your first name?"},
+            {k:'lastName',q:"Last name?"},
+            {k:'email',q:"Email address?"},
+            {k:'phone',q:"Phone number?"},
+            {k:'businessName',q:"Business name?"},
+            {k:'businessState',q:"State? (2-letter code)"},
+            {k:'industry',q:"Industry?"},
+            {k:'primaryChallenge',q:"Primary challenge?"},
+            {k:'businessStage',q:"Business stage? (Startup/Growing/Established)"},
+            {k:'priority',q:"Priority? (Funding / Systems/Marketing)"},
+            {k:'timeInBusiness',q:"Time in business?"},
+            {k:'monthlyRevenue',q:"Monthly revenue range?"},
+            {k:'businessCredit',q:"Business credit?"},
+            {k:'personalCredit',q:"Personal credit range?"},
+            {k:'fundingPurpose',q:"Funding purpose?"}
+        ];
+        function add(txt,user){
+            const d=document.createElement('div');
+            d.className='message '+(user?'user':'bot');
+            d.innerHTML='<div class="message-content">'+txt+'</div>';
+            messages.appendChild(d);
+            messages.scrollTop=messages.scrollHeight;
         }
+        function showTyping(){
+            const t=document.createElement('div');
+            t.id='typing';
+            t.className='typing-indicator active';
+            t.innerHTML='<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+            messages.appendChild(t);
+            messages.scrollTop=messages.scrollHeight;
+        }
+        function hideTyping(){
+            const t=document.getElementById('typing');
+            if(t)t.remove();
+        }
+        async function send(){
+            try{
+                await fetch(WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+                add("✅ Perfect! Check your email - I'll send your personalized match!");
+            }catch(e){
+                add("Thanks! Our team will reach out soon.");
+            }
+        }
+        function handle(){
+            const ans=input.value.trim();
+            if(!ans)return;
+            add(ans,true);
+            data[qs[index].k]=ans;
+            input.value='';
+            index++;
+            if(index<qs.length){
+                showTyping();
+                setTimeout(()=>{hideTyping();add(qs[index].q);},500);
+            }else{
+                showTyping();
+                setTimeout(()=>{hideTyping();send();},500);
+            }
+        }
+        btn.onclick=handle;
+        input.onkeypress=e=>{if(e.key==='Enter')handle();};
+        setTimeout(()=>input.focus(),300);
     </script>
 </body>
-
 </html>
