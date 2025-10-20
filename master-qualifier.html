@@ -257,7 +257,7 @@
         </div>
     </div>
 
-   <script>
+  <script>
     const WEBHOOK = 'https://mtoreai.app.n8n.cloud/webhook/qualifier-intake';
     
     const chatMessages = document.getElementById('chatMessages');
@@ -271,36 +271,37 @@
         { 
             key: 'firstName', 
             question: "What's your first name?",
-            response: (answer) => `Nice to meet you, ${answer}!`
+            nextQuestion: "And your last name?"
         },
         { 
             key: 'lastName', 
             question: "And your last name?",
-            response: (answer) => `Perfect, ${qualifierData.firstName} ${answer}!`
+            nextQuestion: "What's the best email to send your personalized results to?"
         },
         { 
             key: 'email', 
             question: "What's the best email to send your personalized results to?",
-            response: () => `Got it!`
+            nextQuestion: "And what's the best phone number to reach you?"
         },
         { 
             key: 'phone', 
             question: "And what's the best phone number to reach you?",
-            response: () => `Thanks! Now let's talk about your business.`
+            nextQuestion: "Now let's talk about your business. What's your business name?"
         },
         { 
             key: 'businessName', 
             question: "What's your business name?",
-            response: (answer) => `${answer} - great name!`
+            nextQuestion: "Which state is your business in? (Just give me the 2-letter code like TX, CA, FL)"
         },
         { 
             key: 'businessState', 
-            question: "Which state is your business in? (Just give me the 2-letter code like TX, CA, FL)",
-            response: (answer) => `${answer.toUpperCase()} - nice!`
+            question: "Which state is your business in?",
+            nextQuestion: "What industry are you in?"
         },
         { 
             key: 'industry', 
             question: "What industry are you in?",
+            nextQuestion: "What's your primary business challenge right now?",
             response: (answer) => {
                 const state = qualifierData.businessState.toUpperCase();
                 const responses = {
@@ -316,16 +317,18 @@
         { 
             key: 'primaryChallenge', 
             question: "What's your primary business challenge right now?",
-            response: () => `I hear you. Let's figure out the best solution.`
+            nextQuestion: "What stage is your business in? (Startup, Growing, or Established)"
         },
         { 
             key: 'businessStage', 
-            question: "What stage is your business in? (Startup, Growing, or Established)",
+            question: "What stage is your business in?",
+            nextQuestion: "So what's your main priority right now? Are you looking to get funding or build better systems and marketing?",
             response: (answer) => `${answer} stage - perfect.`
         },
         { 
             key: 'priority', 
-            question: "So what's your main priority right now? Are you looking to get funding or build better systems and marketing?",
+            question: "What's your main priority?",
+            nextQuestion: "How long have you been in business? (Less than 6 months / 6-12 months / 1-2 years / 2+ years)",
             response: (answer) => {
                 if (answer.toLowerCase().includes('funding')) {
                     return `Got it - funding is the priority. Let's find you the right options.`;
@@ -336,7 +339,8 @@
         },
         { 
             key: 'timeInBusiness', 
-            question: "How long have you been in business? (Less than 6 months / 6-12 months / 1-2 years / 2+ years)",
+            question: "How long have you been in business?",
+            nextQuestion: "What's your average monthly revenue? (Under $10k / $10k-$25k / $25k-$50k / $50k-$100k / $100k+)",
             response: (answer) => {
                 if (answer.includes('2+')) {
                     return `${answer} - you've built something solid!`;
@@ -347,7 +351,8 @@
         },
         { 
             key: 'monthlyRevenue', 
-            question: "What's your average monthly revenue? (Under $10k / $10k-$25k / $25k-$50k / $50k-$100k / $100k+)",
+            question: "What's your average monthly revenue?",
+            nextQuestion: "How's your business credit? (None/Building / Fair / Good / Excellent / Don't know)",
             response: (answer) => {
                 if (answer.includes('$100k+')) {
                     return `$100k+ monthly - impressive! That opens up premium funding options.`;
@@ -360,7 +365,8 @@
         },
         { 
             key: 'businessCredit', 
-            question: "How's your business credit? (None/Building / Fair / Good / Excellent / Don't know)",
+            question: "How's your business credit?",
+            nextQuestion: "And your personal credit score range? (Below 600 / 600-649 / 650-679 / 680-719 / 720+)",
             response: (answer) => {
                 if (answer.toLowerCase().includes('excellent') || answer.toLowerCase().includes('good')) {
                     return `${answer} business credit - that's great! You've been working hard on that.`;
@@ -373,7 +379,8 @@
         },
         { 
             key: 'personalCredit', 
-            question: "And your personal credit score range? (Below 600 / 600-649 / 650-679 / 680-719 / 720+)",
+            question: "And your personal credit score range?",
+            nextQuestion: "How much funding are you looking for? ($10k / $25k / $50k / $100k / $250k+)",
             response: (answer) => {
                 if (answer.includes('720+') || answer.includes('680-719')) {
                     return `${answer} - excellent! That score opens doors to premium lenders.`;
@@ -386,12 +393,13 @@
         },
         { 
             key: 'fundingAmount', 
-            question: "How much funding are you looking for? ($10k / $25k / $50k / $100k / $250k+)",
-            response: (answer) => `${answer} - got it.`
+            question: "How much funding are you looking for?",
+            nextQuestion: "And what will you use the funding for? (Equipment / Marketing / Payroll / Inventory / Real Estate / Other)"
         },
         { 
             key: 'fundingPurpose', 
-            question: "And what will you use the funding for? (Equipment / Marketing / Payroll / Inventory / Real Estate / Other)",
+            question: "What will you use the funding for?",
+            nextQuestion: "Last question: when do you need the funding? (24-48 hours / Within 1 week / Within 1 month / 2-3 months)",
             response: (answer) => {
                 const responses = {
                     'Marketing': `${answer}! Smart investment - that's such an important part of business growth. We have AI marketing tools that can help maximize your ROI too.`,
@@ -405,7 +413,7 @@
         },
         { 
             key: 'fundingTimeline', 
-            question: "Last question: when do you need the funding? (24-48 hours / Within 1 week / Within 1 month / 2-3 months)",
+            question: "When do you need the funding?",
             response: (answer) => {
                 if (answer.includes('24-48')) {
                     return `${answer} - urgent! We have lenders who specialize in fast funding. Let me process your information...`;
@@ -506,23 +514,25 @@
         setTimeout(() => {
             hideTypingIndicator();
             
-            // Show contextual response
-            const response = currentQuestion.response(answer);
-            addMessage(response);
+            // Check if this question has a custom response
+            if (currentQuestion.response) {
+                const response = currentQuestion.response(answer);
+                addMessage(response + " " + (currentQuestion.nextQuestion || ""));
+            } else {
+                // Just show acknowledgment with name if available
+                const firstName = qualifierData.firstName || "";
+                const ack = firstName ? `Got it, ${firstName}!` : "Got it!";
+                
+                if (currentQuestion.nextQuestion) {
+                    addMessage(ack + " " + currentQuestion.nextQuestion);
+                }
+            }
             
             // Move to next question
             currentQuestionIndex++;
             
-            // Check if there are more questions
-            if (currentQuestionIndex < questions.length) {
-                // Show typing indicator for next question
-                showTypingIndicator();
-                setTimeout(() => {
-                    hideTypingIndicator();
-                    addMessage(questions[currentQuestionIndex].question);
-                }, 1200);
-            } else {
-                // All questions answered - send data
+            // Check if we're done
+            if (currentQuestionIndex >= questions.length) {
                 setTimeout(() => {
                     sendData();
                 }, 2000);
@@ -543,6 +553,7 @@
 </script>
 </body>
 </html>
+
 
 
 
