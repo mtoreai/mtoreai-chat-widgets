@@ -257,282 +257,292 @@
         </div>
     </div>
 
-    <script>
-        const WEBHOOK = 'https://mtoreai.app.n8n.cloud/webhook/qualifier-intake';
-        
-        const chatMessages = document.getElementById('chatMessages');
-        const messageInput = document.getElementById('messageInput');
-        const sendButton = document.getElementById('sendButton');
+   <script>
+    const WEBHOOK = 'https://mtoreai.app.n8n.cloud/webhook/qualifier-intake';
+    
+    const chatMessages = document.getElementById('chatMessages');
+    const messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendButton');
 
-        let qualifierData = {};
-        let currentQuestionIndex = 0;
+    let qualifierData = {};
+    let currentQuestionIndex = 0;
 
-        const questions = [
-            { 
-                key: 'firstName', 
-                question: "What's your first name?",
-                response: (answer) => `Nice to meet you, ${answer}! And your last name?`
-            },
-            { 
-                key: 'lastName', 
-                question: "And your last name?",
-                response: (answer) => `Perfect, ${qualifierData.firstName} ${answer}! What's the best email to send your personalized results to?`
-            },
-            { 
-                key: 'email', 
-                question: "What's your email address?",
-                response: () => `Got it! And what's the best phone number to reach you?`
-            },
-            { 
-                key: 'phone', 
-                question: "Phone number?",
-                response: () => `Thanks! Now let's talk about your business. What's your business name?`
-            },
-            { 
-                key: 'businessName', 
-                question: "What's your business name?",
-                response: (answer) => `${answer} - great name! Which state is your business in? (Just give me the 2-letter code like TX, CA, FL)`
-            },
-            { 
-                key: 'businessState', 
-                question: "Which state is your business in?",
-                response: (answer) => `${answer.toUpperCase()} - nice! What industry are you in?`
-            },
-            { 
-                key: 'industry', 
-                question: "What industry are you in?",
-                response: (answer) => {
-                    const state = qualifierData.businessState.toUpperCase();
-                    const responses = {
-                        'Construction': `${answer} in ${state}! That's a booming industry. We've helped many ${answer.toLowerCase()} businesses grow.`,
-                        'Real Estate': `${answer} in ${state}! Real estate is such an exciting space. We work with many investors and agents.`,
-                        'Technology': `Oh, ${answer}! That's a great niche. We've helped many tech companies scale quickly.`,
-                        'Healthcare': `${answer} - such an important industry! We've worked with many healthcare businesses.`,
-                        'Restaurant': `${answer}! The food industry can be tough but rewarding. We've helped many restaurant owners thrive.`
-                    };
-                    return responses[answer] || `${answer} - great industry! We've helped many ${answer.toLowerCase()} businesses succeed. What's your primary business challenge right now?`;
-                }
-            },
-            { 
-                key: 'primaryChallenge', 
-                question: "What's your primary business challenge right now?",
-                response: () => `I hear you. Let's figure out the best solution. What stage is your business in? (Startup, Growing, or Established)`
-            },
-            { 
-                key: 'businessStage', 
-                question: "What stage is your business in?",
-                response: (answer) => `${answer} stage - perfect. So what's your main priority right now? Are you looking to get funding or build better systems and marketing?`
-            },
-            { 
-                key: 'priority', 
-                question: "What's your priority?",
-                response: (answer) => {
-                    if (answer.toLowerCase().includes('funding')) {
-                        return `Got it - funding is the priority. Let's find you the right options. How long have you been in business? (Less than 6 months / 6-12 months / 1-2 years / 2+ years)`;
-                    } else {
-                        return `Systems and marketing - smart choice! That'll help you scale faster. How long have you been in business? (Less than 6 months / 6-12 months / 1-2 years / 2+ years)`;
-                    }
-                }
-            },
-            { 
-                key: 'timeInBusiness', 
-                question: "How long have you been in business?",
-                response: (answer) => {
-                    if (answer.includes('2+')) {
-                        return `${answer} - you've built something solid! What's your average monthly revenue? (Under $10k / $10k-$25k / $25k-$50k / $50k-$100k / $100k+)`;
-                    } else {
-                        return `${answer} - you're building momentum! What's your average monthly revenue? (Under $10k / $10k-$25k / $25k-$50k / $50k-$100k / $100k+)`;
-                    }
-                }
-            },
-            { 
-                key: 'monthlyRevenue', 
-                question: "What's your average monthly revenue?",
-                response: (answer) => {
-                    if (answer.includes('$100k+')) {
-                        return `$100k+ monthly - impressive! That opens up premium funding options. How's your business credit? (None/Building / Fair / Good / Excellent / Don't know)`;
-                    } else if (answer.includes('Under $10k')) {
-                        return `No worries - everyone starts somewhere! We have options for businesses at every stage. How's your business credit? (None/Building / Fair / Good / Excellent / Don't know)`;
-                    } else {
-                        return `${answer} - solid numbers! That gives us good options to work with. How's your business credit? (None/Building / Fair / Good / Excellent / Don't know)`;
-                    }
-                }
-            },
-            { 
-                key: 'businessCredit', 
-                question: "How's your business credit?",
-                response: (answer) => {
-                    if (answer.toLowerCase().includes('excellent') || answer.toLowerCase().includes('good')) {
-                        return `${answer} business credit - that's great! You've been working hard on that. And what about your personal credit score range? (Below 600 / 600-649 / 650-679 / 680-719 / 720+)`;
-                    } else if (answer.toLowerCase().includes('none') || answer.toLowerCase().includes('building')) {
-                        return `${answer} - no problem! We can help you build that up while getting you the funding you need. What about your personal credit score range? (Below 600 / 600-649 / 650-679 / 680-719 / 720+)`;
-                    } else {
-                        return `${answer} - we can work with that! And your personal credit score range? (Below 600 / 600-649 / 650-679 / 680-719 / 720+)`;
-                    }
-                }
-            },
-            { 
-                key: 'personalCredit', 
-                question: "And your personal credit score range?",
-                response: (answer) => {
-                    if (answer.includes('720+') || answer.includes('680-719')) {
-                        return `${answer} - excellent! That score opens doors to premium lenders. How much funding are you looking for? ($10k / $25k / $50k / $100k / $250k+)`;
-                    } else if (answer.includes('Below 600') || answer.includes('600-649')) {
-                        return `${answer} - don't be discouraged! We have ways to help you improve that AND get funding. How much are you looking for? ($10k / $25k / $50k / $100k / $250k+)`;
-                    } else {
-                        return `${answer} - we can definitely work with that. How much funding are you looking for? ($10k / $25k / $50k / $100k / $250k+)`;
-                    }
-                }
-            },
-            { 
-                key: 'fundingAmount', 
-                question: "How much funding do you need?",
-                response: (answer) => `${answer} - got it. And what will you use the funding for? (Equipment / Marketing / Payroll / Inventory / Real Estate / Other)`
-            },
-            { 
-                key: 'fundingPurpose', 
-                question: "What will you use the funding for?",
-                response: (answer) => {
-                    const responses = {
-                        'Marketing': `${answer}! Smart investment - that's such an important part of business growth. We have AI marketing tools that can help maximize your ROI too.`,
-                        'Equipment': `${answer} - essential for scaling operations! Having the right equipment makes all the difference.`,
-                        'Real Estate': `${answer}! We have specialized lenders who focus specifically on real estate deals.`,
-                        'Payroll': `${answer} - taking care of your team is critical. We understand that.`,
-                        'Inventory': `${answer} - can't grow without inventory! Smart move.`
-                    };
-                    return (responses[answer] || `${answer} - important investment!`) + ` Last question: when do you need the funding? (24-48 hours / Within 1 week / Within 1 month / 2-3 months)`;
-                }
-            },
-            { 
-                key: 'fundingTimeline', 
-                question: "When do you need the funding?",
-                response: (answer) => {
-                    if (answer.includes('24-48')) {
-                        return `${answer} - urgent! We have lenders who specialize in fast funding. Let me process your information...`;
-                    } else if (answer.includes('1 week')) {
-                        return `${answer} - moving quickly! We have several options that can close in that timeframe. Processing your matches now...`;
-                    } else {
-                        return `${answer} - perfect! That gives us time to find you the best rates and terms. Let me process everything...`;
-                    }
-                }
+    const questions = [
+        { 
+            key: 'firstName', 
+            question: "What's your first name?",
+            response: (answer) => `Nice to meet you, ${answer}!`
+        },
+        { 
+            key: 'lastName', 
+            question: "And your last name?",
+            response: (answer) => `Perfect, ${qualifierData.firstName} ${answer}!`
+        },
+        { 
+            key: 'email', 
+            question: "What's the best email to send your personalized results to?",
+            response: () => `Got it!`
+        },
+        { 
+            key: 'phone', 
+            question: "And what's the best phone number to reach you?",
+            response: () => `Thanks! Now let's talk about your business.`
+        },
+        { 
+            key: 'businessName', 
+            question: "What's your business name?",
+            response: (answer) => `${answer} - great name!`
+        },
+        { 
+            key: 'businessState', 
+            question: "Which state is your business in? (Just give me the 2-letter code like TX, CA, FL)",
+            response: (answer) => `${answer.toUpperCase()} - nice!`
+        },
+        { 
+            key: 'industry', 
+            question: "What industry are you in?",
+            response: (answer) => {
+                const state = qualifierData.businessState.toUpperCase();
+                const responses = {
+                    'Construction': `${answer} in ${state}! That's a booming industry. We've helped many ${answer.toLowerCase()} businesses grow.`,
+                    'Real Estate': `${answer} in ${state}! Real estate is such an exciting space. We work with many investors and agents.`,
+                    'Technology': `Oh, ${answer}! That's a great niche. We've helped many tech companies scale quickly.`,
+                    'Healthcare': `${answer} - such an important industry! We've worked with many healthcare businesses.`,
+                    'Restaurant': `${answer}! The food industry can be tough but rewarding. We've helped many restaurant owners thrive.`
+                };
+                return responses[answer] || `${answer} - great industry! We've helped many ${answer.toLowerCase()} businesses succeed.`;
             }
-        ];
-
-        function addMessage(text, isUser = false) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
-            
-            const avatar = document.createElement('div');
-            avatar.className = 'message-avatar';
-            avatar.textContent = isUser ? 'U' : 'M';
-            
-            const content = document.createElement('div');
-            content.className = 'message-content';
-            content.textContent = text;
-            
-            if (isUser) {
-                messageDiv.appendChild(content);
-                messageDiv.appendChild(avatar);
-            } else {
-                messageDiv.appendChild(avatar);
-                messageDiv.appendChild(content);
-            }
-            
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        function showTypingIndicator() {
-            const typingDiv = document.createElement('div');
-            typingDiv.className = 'message bot';
-            typingDiv.id = 'typingIndicator';
-            
-            const avatar = document.createElement('div');
-            avatar.className = 'message-avatar';
-            avatar.textContent = 'M';
-            
-            const typingContent = document.createElement('div');
-            typingContent.className = 'typing-indicator active';
-            typingContent.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
-            
-            typingDiv.appendChild(avatar);
-            typingDiv.appendChild(typingContent);
-            chatMessages.appendChild(typingDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-
-        function hideTypingIndicator() {
-            const typingIndicator = document.getElementById('typingIndicator');
-            if (typingIndicator) {
-                typingIndicator.remove();
-            }
-        }
-
-        async function sendData() {
-            try {
-                const response = await fetch(WEBHOOK, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(qualifierData)
-                });
-
-                if (response.ok) {
-                    addMessage(`✅ Perfect, ${qualifierData.firstName}! I've analyzed everything and matched you with the best lenders and tools. Check your email at ${qualifierData.email} in the next few minutes - I'm sending your personalized funding matches and business hub access right now!`);
+        },
+        { 
+            key: 'primaryChallenge', 
+            question: "What's your primary business challenge right now?",
+            response: () => `I hear you. Let's figure out the best solution.`
+        },
+        { 
+            key: 'businessStage', 
+            question: "What stage is your business in? (Startup, Growing, or Established)",
+            response: (answer) => `${answer} stage - perfect.`
+        },
+        { 
+            key: 'priority', 
+            question: "So what's your main priority right now? Are you looking to get funding or build better systems and marketing?",
+            response: (answer) => {
+                if (answer.toLowerCase().includes('funding')) {
+                    return `Got it - funding is the priority. Let's find you the right options.`;
                 } else {
-                    addMessage(`Thanks for completing the qualifier, ${qualifierData.firstName}! Our team will reach out shortly with your personalized recommendations.`);
+                    return `Systems and marketing - smart choice! That'll help you scale faster.`;
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                addMessage(`Thanks for completing the qualifier, ${qualifierData.firstName}! Our team will be in touch soon.`);
+            }
+        },
+        { 
+            key: 'timeInBusiness', 
+            question: "How long have you been in business? (Less than 6 months / 6-12 months / 1-2 years / 2+ years)",
+            response: (answer) => {
+                if (answer.includes('2+')) {
+                    return `${answer} - you've built something solid!`;
+                } else {
+                    return `${answer} - you're building momentum!`;
+                }
+            }
+        },
+        { 
+            key: 'monthlyRevenue', 
+            question: "What's your average monthly revenue? (Under $10k / $10k-$25k / $25k-$50k / $50k-$100k / $100k+)",
+            response: (answer) => {
+                if (answer.includes('$100k+')) {
+                    return `$100k+ monthly - impressive! That opens up premium funding options.`;
+                } else if (answer.includes('Under $10k')) {
+                    return `No worries - everyone starts somewhere! We have options for businesses at every stage.`;
+                } else {
+                    return `${answer} - solid numbers! That gives us good options to work with.`;
+                }
+            }
+        },
+        { 
+            key: 'businessCredit', 
+            question: "How's your business credit? (None/Building / Fair / Good / Excellent / Don't know)",
+            response: (answer) => {
+                if (answer.toLowerCase().includes('excellent') || answer.toLowerCase().includes('good')) {
+                    return `${answer} business credit - that's great! You've been working hard on that.`;
+                } else if (answer.toLowerCase().includes('none') || answer.toLowerCase().includes('building')) {
+                    return `${answer} - no problem! We can help you build that up while getting you the funding you need.`;
+                } else {
+                    return `${answer} - we can work with that!`;
+                }
+            }
+        },
+        { 
+            key: 'personalCredit', 
+            question: "And your personal credit score range? (Below 600 / 600-649 / 650-679 / 680-719 / 720+)",
+            response: (answer) => {
+                if (answer.includes('720+') || answer.includes('680-719')) {
+                    return `${answer} - excellent! That score opens doors to premium lenders.`;
+                } else if (answer.includes('Below 600') || answer.includes('600-649')) {
+                    return `${answer} - don't be discouraged! We have ways to help you improve that AND get funding.`;
+                } else {
+                    return `${answer} - we can definitely work with that.`;
+                }
+            }
+        },
+        { 
+            key: 'fundingAmount', 
+            question: "How much funding are you looking for? ($10k / $25k / $50k / $100k / $250k+)",
+            response: (answer) => `${answer} - got it.`
+        },
+        { 
+            key: 'fundingPurpose', 
+            question: "And what will you use the funding for? (Equipment / Marketing / Payroll / Inventory / Real Estate / Other)",
+            response: (answer) => {
+                const responses = {
+                    'Marketing': `${answer}! Smart investment - that's such an important part of business growth. We have AI marketing tools that can help maximize your ROI too.`,
+                    'Equipment': `${answer} - essential for scaling operations! Having the right equipment makes all the difference.`,
+                    'Real Estate': `${answer}! We have specialized lenders who focus specifically on real estate deals.`,
+                    'Payroll': `${answer} - taking care of your team is critical. We understand that.`,
+                    'Inventory': `${answer} - can't grow without inventory! Smart move.`
+                };
+                return responses[answer] || `${answer} - important investment!`;
+            }
+        },
+        { 
+            key: 'fundingTimeline', 
+            question: "Last question: when do you need the funding? (24-48 hours / Within 1 week / Within 1 month / 2-3 months)",
+            response: (answer) => {
+                if (answer.includes('24-48')) {
+                    return `${answer} - urgent! We have lenders who specialize in fast funding. Let me process your information...`;
+                } else if (answer.includes('1 week')) {
+                    return `${answer} - moving quickly! We have several options that can close in that timeframe. Processing your matches now...`;
+                } else {
+                    return `${answer} - perfect! That gives us time to find you the best rates and terms. Let me process everything...`;
+                }
             }
         }
+    ];
 
-        function handleAnswer() {
-            const answer = messageInput.value.trim();
-            if (!answer) return;
+    function addMessage(text, isUser = false) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+        
+        const avatar = document.createElement('div');
+        avatar.className = 'message-avatar';
+        avatar.textContent = isUser ? 'U' : 'M';
+        
+        const content = document.createElement('div');
+        content.className = 'message-content';
+        content.textContent = text;
+        
+        if (isUser) {
+            messageDiv.appendChild(content);
+            messageDiv.appendChild(avatar);
+        } else {
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(content);
+        }
+        
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
 
-            addMessage(answer, true);
-            
-            const currentQuestion = questions[currentQuestionIndex];
-            qualifierData[currentQuestion.key] = answer;
-            
-            messageInput.value = '';
+    function showTypingIndicator() {
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'message bot';
+        typingDiv.id = 'typingIndicator';
+        
+        const avatar = document.createElement('div');
+        avatar.className = 'message-avatar';
+        avatar.textContent = 'M';
+        
+        const typingContent = document.createElement('div');
+        typingContent.className = 'typing-indicator active';
+        typingContent.innerHTML = '<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>';
+        
+        typingDiv.appendChild(avatar);
+        typingDiv.appendChild(typingContent);
+        chatMessages.appendChild(typingDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
 
-            if (currentQuestionIndex < questions.length - 1) {
-                showTypingIndicator();
-                setTimeout(() => {
-                    hideTypingIndicator();
-                    const response = currentQuestion.response(answer);
-                    addMessage(response);
-                    currentQuestionIndex++;
-                }, 1000);
+    function hideTypingIndicator() {
+        const typingIndicator = document.getElementById('typingIndicator');
+        if (typingIndicator) {
+            typingIndicator.remove();
+        }
+    }
+
+    async function sendData() {
+        try {
+            const response = await fetch(WEBHOOK, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(qualifierData)
+            });
+
+            if (response.ok) {
+                addMessage(`✅ Perfect, ${qualifierData.firstName}! I've analyzed everything and matched you with the best lenders and tools. Check your email at ${qualifierData.email} in the next few minutes - I'm sending your personalized funding matches and business hub access right now!`);
             } else {
+                addMessage(`Thanks for completing the qualifier, ${qualifierData.firstName}! Our team will reach out shortly with your personalized recommendations.`);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            addMessage(`Thanks for completing the qualifier, ${qualifierData.firstName}! Our team will be in touch soon.`);
+        }
+    }
+
+    function handleAnswer() {
+        const answer = messageInput.value.trim();
+        if (!answer) return;
+
+        addMessage(answer, true);
+        
+        const currentQuestion = questions[currentQuestionIndex];
+        qualifierData[currentQuestion.key] = answer;
+        
+        messageInput.value = '';
+
+        // Show typing indicator
+        showTypingIndicator();
+        
+        setTimeout(() => {
+            hideTypingIndicator();
+            
+            // Show contextual response
+            const response = currentQuestion.response(answer);
+            addMessage(response);
+            
+            // Move to next question
+            currentQuestionIndex++;
+            
+            // Check if there are more questions
+            if (currentQuestionIndex < questions.length) {
+                // Show typing indicator for next question
                 showTypingIndicator();
                 setTimeout(() => {
                     hideTypingIndicator();
-                    const response = currentQuestion.response(answer);
-                    addMessage(response);
-                    setTimeout(() => {
-                        sendData();
-                    }, 2000);
-                }, 1000);
+                    addMessage(questions[currentQuestionIndex].question);
+                }, 1200);
+            } else {
+                // All questions answered - send data
+                setTimeout(() => {
+                    sendData();
+                }, 2000);
             }
+        }, 1000);
+    }
+
+    sendButton.addEventListener('click', handleAnswer);
+    messageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            handleAnswer();
         }
+    });
 
-        sendButton.addEventListener('click', handleAnswer);
-        messageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                handleAnswer();
-            }
-        });
-
-        setTimeout(() => {
-            messageInput.focus();
-        }, 500);
-    </script>
+    setTimeout(() => {
+        messageInput.focus();
+    }, 500);
+</script>
 </body>
 </html>
+
 
 
